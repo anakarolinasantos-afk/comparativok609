@@ -82,6 +82,18 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
 .unit-product-info{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:24px;margin-bottom:28px;display:flex;gap:32px;flex-wrap:wrap;align-items:center}
 .unit-product-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
 .unit-product-val{font-size:14px;font-weight:600;color:var(--text)}
+.fx-panel{margin-top:22px;padding-top:18px;border-top:1px solid var(--border2)}
+.fx-panel-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.fx-panel-title .fx-note{text-transform:none;font-weight:400;letter-spacing:normal;color:var(--muted);font-size:11.5px}
+.fx-grid{display:flex;gap:12px;flex-wrap:wrap}
+.fx-item{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--border2);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;gap:3px;min-width:130px}
+.fx-item.ref{border-left-color:var(--blue)}
+.fx-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.fx-val{font-size:16px;font-weight:700;color:var(--text)}
+.fx-badge{font-size:10.5px;font-weight:600}
+.fx-badge.up{color:var(--red)}
+.fx-badge.down{color:var(--green)}
+@media(max-width:600px){.fx-grid{gap:8px}.fx-item{min-width:104px;padding:8px 12px}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.main{padding:20px 16px}.hero{padding:28px 20px}.unit-card-grid{grid-template-columns:1fr}}
 </style>
@@ -100,6 +112,15 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
     <div class="hero-meta-item"><span class="hero-meta-label">Fechamento</span><span class="hero-meta-val">08/set/26</span></div>
   </div>
   <div class="hero-badge">+16,08% acima do orcado</div>
+  <div class="fx-panel">
+    <div class="fx-panel-title">Taxas de cambio utilizadas <span class="fx-note">— cada etapa usa uma cotacao diferente e isso influencia bastante o resultado (frete, impostos e ICMS)</span></div>
+    <div class="fx-grid">
+      <div class="fx-item ref"><span class="fx-label">Referencia</span><span class="fx-val">R$ 5,0700</span></div>
+      <div class="fx-item"><span class="fx-label">Cambio 20% (entrada)</span><span class="fx-val">R$ 5,0200</span><span class="fx-badge down">-0,99% vs ref.</span></div>
+      <div class="fx-item"><span class="fx-label">Cambio 80% (saldo)</span><span class="fx-val">R$ 5,1420</span><span class="fx-badge up">+1,42% vs ref.</span></div>
+      <div class="fx-item"><span class="fx-label">Registro (Des.)</span><span class="fx-val">R$ 5,2043</span><span class="fx-badge up">+2,65% vs ref.</span></div>
+    </div>
+  </div>
 </div>
 
 <div class="main">
