@@ -64,14 +64,21 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
 .chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted2);font-weight:500}
 .leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
-.unit-card-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px}
-.unit-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:28px 24px;position:relative;overflow:hidden}
+.unit-card-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;max-width:780px}
+.unit-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
 .unit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .unit-card.blue::before{background:var(--blue)}.unit-card.orange::before{background:var(--orange)}.unit-card.red::before{background:var(--red)}
-.unit-card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
-.unit-card-val{font-size:38px;font-weight:700}
+.unit-card-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.unit-card-val{font-size:24px;font-weight:700}
 .unit-card.blue .unit-card-val{color:var(--blue)}.unit-card.orange .unit-card-val{color:var(--orange)}.unit-card.red .unit-card-val{color:var(--red)}
-.unit-card-sub{font-size:12px;color:var(--muted);margin-top:8px}
+.unit-card-sub{font-size:10.5px;color:var(--muted);margin-top:5px}
+.table-row.parent{cursor:pointer}
+.table-row.parent .cat-name::before{content:'▸ ';display:inline-block;color:var(--muted);font-size:10px;transition:transform .15s;transform:translateX(0)}
+.table-row.parent.open .cat-name::before{content:'▾ '}
+.table-row.sub{display:none;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr;padding:10px 24px 10px 48px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.table-row.sub.show{display:grid}
+.table-row.sub .cat-name{font-size:11.5px;font-weight:500;color:var(--muted2)}
+.table-row.sub .val{font-size:11px}
 .unit-product-info{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:24px;margin-bottom:28px;display:flex;gap:32px;flex-wrap:wrap;align-items:center}
 .unit-product-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
 .unit-product-val{font-size:14px;font-weight:600;color:var(--text)}
@@ -170,9 +177,14 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
 </div>
 
 <script>
-const cats=['Produto','Imposto de Importacao (I.I.)','IPI','PIS','COFINS','ICMS','Taxa Siscomex','Frete Maritimo','Desp. Desembaraco','Seguro'];
-const apr=[188097.00,47125.79,7657.94,3958.57,18190.55,7246.14,214.50,8452.34,27945.97,1266.05];
-const rea=[220004.78,55645.17,9042.34,4674.19,21479.04,8605.14,154.23,10238.54,29025.57,1167.92];
+const cats=['Produto','Impostos (II+IPI+PIS+COFINS+Siscomex)','ICMS','Frete (Internacional + Maritimo)','Seguro','Desp. Desembaraco'];
+const apr=[167005.80,77147.35,7246.14,29543.54,1266.05,27945.97];
+const rea=[168573.74,90994.97,8605.14,61669.58,1167.92,29025.57];
+const impostoSub={
+  names:['Imposto de Importacao (I.I.)','IPI','PIS','COFINS','Taxa Siscomex'],
+  apr:[47125.79,7657.94,3958.57,18190.55,214.50],
+  rea:[55645.17,9042.34,4674.19,21479.04,154.23]
+};
 const totalApr=310154.85,totalReal=360036.93,qtd=54000;
 const unitApr=apr.map(v=>v/qtd),unitRea=rea.map(v=>v/qtd);
 const fmtBRL=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -181,25 +193,43 @@ const gc='rgba(0,0,0,0.06)',tc='#999',ff="'Poppins', sans-serif";
 const pieColors=['#2563eb','#dc2626','#7c3aed','#1e9e62','#10b981','#f59e0b','#94a3b8','#ea580c','#06b6d4','#ec4899'];
 
 const tw=document.getElementById('mainTable');
-cats.forEach((c,i)=>{
-  const diff=rea[i]-apr[i],v=(diff/apr[i])*100;
+function rowHTML(c,aprV,reaV,sub){
+  const diff=reaV-aprV,v=(diff/aprV)*100;
   const isUp=v>0.005,isFlat=Math.abs(v)<0.005;
-  const pct=Math.min(Math.max(rea[i]/Math.max(...rea)*100,5),100).toFixed(0);
+  const pct=Math.min(Math.max(reaV/Math.max(...rea)*100,5),100).toFixed(0);
   const dc=isFlat?'var(--muted2)':isUp?'var(--red)':'var(--green)';
   const bc=isUp?'#dc2626':'#1e9e62';
   const cls=isFlat?'neutral':isUp?'up':'down';
   const icon=isFlat?'--':isUp?'▲':'▼';
-  const row=document.createElement('div');
-  row.className='table-row';
-  row.innerHTML=`
+  return `
     <span class="cat-name">${c}</span>
-    <span class="val">${fmtBRL(apr[i])}</span>
-    <span class="val hi">${fmtBRL(rea[i])}</span>
+    <span class="val">${fmtBRL(aprV)}</span>
+    <span class="val hi">${fmtBRL(reaV)}</span>
     <span class="val" style="color:${dc}">${diff>=0?'+':''}${fmtBRL(diff)}</span>
     <span><span class="badge ${cls}">${icon} ${Math.abs(v).toFixed(2)}%</span></span>
-    <div class="bar-wrap"><div class="bar-fill" style="width:0%;background:${bc}" data-pct="${pct}"></div></div>
+    ${sub?'':`<div class="bar-wrap"><div class="bar-fill" style="width:0%;background:${bc}" data-pct="${pct}"></div></div>`}
   `;
+}
+cats.forEach((c,i)=>{
+  const isImpostos=c.startsWith('Impostos');
+  const row=document.createElement('div');
+  row.className='table-row'+(isImpostos?' parent':'');
+  row.innerHTML=rowHTML(c,apr[i],rea[i],false);
+  if(isImpostos){
+    row.addEventListener('click',()=>{
+      row.classList.toggle('open');
+      document.querySelectorAll('.table-row.sub').forEach(r=>r.classList.toggle('show',row.classList.contains('open')));
+    });
+  }
   tw.appendChild(row);
+  if(isImpostos){
+    impostoSub.names.forEach((n,j)=>{
+      const subRow=document.createElement('div');
+      subRow.className='table-row sub';
+      subRow.innerHTML=rowHTML(n,impostoSub.apr[j],impostoSub.rea[j],true);
+      tw.appendChild(subRow);
+    });
+  }
 });
 const td2=totalReal-totalApr,tv2=(td2/totalApr)*100;
 const totRow=document.createElement('div');
